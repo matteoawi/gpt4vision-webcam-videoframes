@@ -1,5 +1,3 @@
-# gpt4vision-webcam-videoframes
-
 # Running GPT-Vision with Webcam for Frame Capture
 
 This guide demonstrates how to set up and use GPT-Vision locally. Using a webcam, you can capture frames by pressing the spacebar and send them to the model for analysis. The setup uses OpenAI’s GPT-4 Vision preview model for visual understanding and quick responses.
