@@ -1,34 +1,56 @@
-# Running GPT-Vision with Webcam for Frame Capture
+# GPT-Vision Webcam Frame Capture
 
-This guide demonstrates how to set up and use GPT-Vision locally. Using a webcam, you can capture frames by pressing the spacebar and send them to the model for analysis. The setup uses OpenAI’s GPT-4 Vision preview model for visual understanding and quick responses.
+This repository provides a Python script that lets you capture frames with your webcam and analyze them using OpenAI's GPT-4 Vision model. Press the spacebar to capture frames, and GPT-4 Vision will return quick, concise analysis, helpful for tasks like identifying materials for recycling.
+
+## Features
+
+- **Live Webcam Feed**: View your webcam feed live.
+- **Frame Capture on Spacebar**: Capture frames when you press the spacebar.
+- **AI-Powered Analysis**: GPT-4 Vision analyzes the captured frame and returns material identification and disposal guidance.
+- **Simple Key Commands**: Use the spacebar to capture frames and **'q'** to quit.
+
+---
 
 ## Prerequisites
 
-- Python 3.7 or higher
-- OpenCV for video capture and frame manipulation
-- OpenAI Python client for API interaction
-- An API key from OpenAI with access to GPT-4 Vision preview
+Before you start, you’ll need:
 
-## Installation
+- **Python 3.7+** installed on your system.
+- **OpenCV** for capturing video frames.
+- **OpenAI Python client** for connecting to GPT-4 Vision.
+- An **OpenAI API key** with access to GPT-4 Vision.
 
-Install the required libraries:
+---
+
+## Setup Instructions
+
+### Step 1: Install Python
+
+1. Download Python from [python.org](https://www.python.org/downloads/) and install it.
+2. **IMPORTANT**: Check the box to **Add Python to PATH** during installation.
+
+### Step 2: Install Required Libraries
+
+Open Command Prompt and install the libraries using:
 ```bash
 pip install opencv-python-headless openai
 ```
 
-## Usage
+### Step 3: Get OpenAI API Key
 
-The script allows you to:
-1. Display a live feed from your webcam.
-2. Capture a frame when you press the spacebar.
-3. Send the frame to GPT-Vision for analysis. (In this script we use vision to help with efficient garbage sorting by material identification and disposal tips)
+1. Sign up or log in to OpenAI at [platform.openai.com](https://platform.openai.com/).
+2. Get your API key from the API settings page.
+3. In the code, replace `"YOUR_API_KEY"` with your actual API key.
 
-In this script we can process up to **10 frame per request** and returns concise responses with a maximum token limit of **120 tokens**.
-Feel free to play with this 2 numbers for achieving your goals.
+### Step 4: Prepare the Script
 
-## Code Implementation
+1. Copy the code below and paste it into a text editor (e.g., Notepad).
+2. Save the file with the name `gpt_vision_webcam.py`.
+3. Make sure the API key is correctly set in the code.
 
-Here's the Python code to set up the webcam and integrate it with GPT-Vision:
+Or download the `gpt_vision_webcam.py` file directly from this repository, then edit it to add your API key.
+
+### Python Code
 
 ```python
 import cv2
@@ -41,43 +63,47 @@ from openai import OpenAI
 client = OpenAI(api_key="YOUR_API_KEY")
 
 # Video capture setup
-cap = cv2.VideoCapture(0) #0 is your camera source, and 0 is the default, if you encounter issues, usually with USB webcams, try other numbers.
-frames_to_capture = 1  # Define the number of frames to capture per session
+cap = cv2.VideoCapture(0)  # '0' is the default camera. Change if needed for external webcams.
+frames_to_capture = 1  # Number of frames to capture each session
 captured_frames = []
 
-# Threaded function to display live camera feed
+# Display live camera feed
 def display_camera():
     while cap.isOpened():
         ret, frame = cap.read()
         if ret:
             cv2.imshow("Live Camera", frame)
             key = cv2.waitKey(1) & 0xFF
-            if key == ord(' '):  # Start capturing on spacebar press
+            if key == ord(' '):  # Capture frame on spacebar press
                 capture_and_analyze_frames()
-            elif key == ord('q'):  # Exit on 'q' key
+            elif key == ord('q'):  # Quit on 'q' press
                 break
     cap.release()
     cv2.destroyAllWindows()
 
-# Function to capture and analyze frames
+# Capture and analyze frames
 def capture_and_analyze_frames():
     global captured_frames
     captured_frames = []
     print("Capturing and analyzing frames...")
 
-    # Capture, resize, and encode frames
     for _ in range(frames_to_capture):
         ret, frame = cap.read()
         if not ret:
             break
-        resized_frame = cv2.resize(frame, (500, 500))  # Resize to 500x500
+        resized_frame = cv2.resize(frame, (500, 500))  # Resize for processing
         _, buffer = cv2.imencode(".jpg", resized_frame)
         encoded_frame = base64.b64encode(buffer).decode("utf-8")
         captured_frames.append(encoded_frame)
         time.sleep(0.1)
 
-    # Prepare frames for GPT and measure processing time
-    prompt_messages = [{"role": "user", "content": ["Assisti nella differenziazione dei rifiuti analizzando i materiali nell'immagine: identifica il materiale o i materiali e fornisci istruzioni di smaltimento. Risposta secca, no yapping", *[{"image": x, "resize": 500} for x in captured_frames]]}]
+    # Send frames to GPT for analysis
+    prompt_messages = [
+        {"role": "user", "content": [
+            "Identify materials in the image and provide recycling instructions.",
+            *[{"image": x, "resize": 500} for x in captured_frames]
+        ]}
+    ]
     start_time = time.time()
     result = client.chat.completions.create(model="gpt-4-vision-preview", messages=prompt_messages, max_tokens=120)
     response_time = time.time() - start_time
@@ -86,84 +112,38 @@ def capture_and_analyze_frames():
     print(f"Response Time: {response_time:.2f} seconds")
     print(result.choices[0].message.content)
 
-# Start camera display thread
+# Start camera thread
 display_thread = threading.Thread(target=display_camera)
 display_thread.start()
 display_thread.join()
 ```
 
-## Explanation
+---
 
-### Key Functions
+## How to Run on Windows
 
-- **display_camera()**: Continuously displays the webcam feed and listens for key presses (`space` for capturing, `q` for quitting).
-- **capture_and_analyze_frames()**: Captures, resizes, and encodes frames, then sends them to GPT-Vision for analysis. The response includes material identification and disposal instructions.
-
-### Settings
-
-- **frames_to_capture**: Number of frames to capture per session.
-- **max_tokens**: Sets the maximum response length from GPT (120 tokens for concise feedback).
-- **resize dimensions**: Frames are resized to 500x500 for optimal processing.
-
-## Notes
-
-- To quit the application, press **'q'**.
-- Make sure to replace `"YOUR_API_KEY"` with your actual OpenAI API key.
-
-Here are step-by-step instructions to run this GPT-Vision project on Windows.
-
---------------------------------------------------------------
-
-### Running GPT-Vision Webcam Capture on Windows
-
-#### Step 1: Install Python
-
-1. Download Python from [python.org](https://www.python.org/downloads/) and install it on your system. 
-2. Ensure the option **"Add Python to PATH"** is selected during installation.
-
-#### Step 2: Install Required Libraries
-
-Open Command Prompt and install the necessary libraries:
-```bash
-pip install opencv-python-headless openai
-```
-
-#### Step 3: Get OpenAI API Key
-
-1. Go to [OpenAI's API site](https://platform.openai.com/) and sign up or log in.
-2. Generate an API key from the API settings page.
-3. Replace `"YOUR_API_KEY"` in the code with your actual API key.
-
-#### Step 4: Prepare the Python Script
-
-1. Copy the code provided and paste it into a text editor like **Notepad**.
-2. Save the file with a `.py` extension (e.g., `gpt_vision_webcam.py`).
-3. Make sure the script has your API key configured.
-
-You can also download and edit the gpt_vision_webcam.py file attached, with API_KEY and YOUR_PROMPT!
-
-#### Step 5: Run the Script
-
-1. Open Command Prompt and navigate to the folder containing the saved `.py` file:
+1. **Navigate to the script** in Command Prompt:
     ```bash
     cd path\to\your\script
     ```
-2. Run the script by typing:
+2. Run the script with:
     ```bash
     python gpt_vision_webcam.py
     ```
 
-#### Step 6: Interact with the Script
+### Interacting with the Script
 
-- A window should open displaying the live feed from your webcam.
-- Press **spacebar** to capture a frame for analysis.
-- Press **'q'** to close the webcam and end the script.
-
-#### Troubleshooting
-
-- **Error: "No module named 'cv2'"** – Make sure OpenCV was installed correctly with `pip install opencv-python-headless`.
-- **API Authentication Error** – Double-check that your API key is correct and placed in the script where it says `"YOUR_API_KEY"`.
+- A window will display the live feed from your webcam.
+- **Press spacebar** to capture a frame and analyze it.
+- **Press 'q'** to quit the application.
 
 ---
 
-This setup should allow you to run the script on Windows and capture frames with the spacebar to analyze them using GPT-Vision.
+## Troubleshooting
+
+- **No module named 'cv2'**: Reinstall OpenCV with `pip install opencv-python-headless`.
+- **API Key Issues**: Ensure the API key is set correctly in the script.
+
+---
+
+This setup should allow you to quickly capture and analyze frames using GPT-Vision on Windows. Adjust the `frames_to_capture` and `max_tokens` settings for customized responses. Enjoy experimenting!
