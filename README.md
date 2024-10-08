@@ -23,7 +23,7 @@ pip install opencv-python-headless openai
 The script allows you to:
 1. Display a live feed from your webcam.
 2. Capture a frame when you press the spacebar.
-3. Send the frame to GPT-Vision for analysis, with a focus on efficient garbage sorting by material identification.
+3. Send the frame to GPT-Vision for analysis. (In this script we use vision to help with efficient garbage sorting by material identification and disposal tips)
 
 In this script we can process up to **10 frame per request** and returns concise responses with a maximum token limit of **120 tokens**.
 Feel free to play with this 2 numbers for achieving your goals.
