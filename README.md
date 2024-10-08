@@ -140,6 +140,8 @@ pip install opencv-python-headless openai
 2. Save the file with a `.py` extension (e.g., `gpt_vision_webcam.py`).
 3. Make sure the script has your API key configured.
 
+You can also download and edit the gpt_vision_webcam.py file attached, with API_KEY and YOUR_PROMPT!
+
 #### Step 5: Run the Script
 
 1. Open Command Prompt and navigate to the folder containing the saved `.py` file:
