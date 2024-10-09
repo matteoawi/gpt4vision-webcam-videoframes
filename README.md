@@ -33,7 +33,7 @@ Before you start, you’ll need:
 
 Open Command Prompt and install the libraries using:
 ```bash
-pip install opencv-python-headless openai
+pip install opencv-python openai
 ```
 
 ### Step 3: Get OpenAI API Key
