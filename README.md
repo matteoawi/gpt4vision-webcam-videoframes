@@ -1,6 +1,6 @@
 # GPT-Vision Webcam Frame Capture
 
-This repository provides a Python script that lets you capture frames with your webcam and analyze them using OpenAI's GPT-4 Vision model. Press the spacebar to capture frames, and GPT-4 Vision will return quick, concise analysis, helpful for tasks like identifying materials for recycling.
+This repository provides a Python script that lets you capture frames with your webcam and analyze them using OpenAI's GPT-4 Vision model. Press the spacebar to capture frames, and GPT-4 Vision will return quick, concise analysis, helpful for tasks like identifying materials for recycling. This was a simple test integration for a smart-bin rrunning on OpenAI, connected to an app for gamification purpose.
 
 ## Features
 
